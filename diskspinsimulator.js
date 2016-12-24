@@ -18,6 +18,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
+$( document ).ready(function() {
+    drawTable();
+});
+
 function NOOP(data) { // aka First Come First Serve
     var distance = 0;
     var output = [10];
@@ -66,7 +70,7 @@ function CSCAN(data) { // Circular SCAN
     var output = [10];
     var currentPos = 10;
 
-    $('div.dist_cscan').html(distance);
+    $('div.dist_cscan').text(distance);
     return output;
 }
 
@@ -103,7 +107,7 @@ function drawTable() {
     var finalData = data.split(',').map(function (x) {
         return parseInt(x, 10);
     });
-    var xData       = categories.slice(0, finalData.length+1);
+    var xAxis       = categories.slice(0, finalData.length+1);
     var dataNOOP    = NOOP(finalData);
     var dataSSTF    = SSTF(finalData);
     var dataLOOK    = LOOK(finalData);
@@ -138,7 +142,7 @@ function drawTable() {
                 backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
             },
             xAxis: {
-                categories: xData
+                categories: xAxis
             },
             yAxis: {
                 title: {
