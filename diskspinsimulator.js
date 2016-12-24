@@ -20,26 +20,49 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 function NOOP(data) { // aka First Come First Serve
     var distance = 0;
+    var output = [10];
+    var currentPos = 10;
+
+    $.each(data, function(index, value) {
+        var target = parseInt(value, 10);
+
+        output.push(target);
+
+        if (currentPos > target) {
+            distance += currentPos-target;
+        }
+        else if (currentPos < target) {
+            distance += target-currentPos;
+        }
+        currentPos = target;
+    });
+
     $('div.dist_noop').text(distance);
-    return data;
+    return output;
 }
 
 function SSTF(data) { // Shortest Seek Time First
     var distance = 0;
+    var output = [10];
+
     $('div.dist_sstf').text(distance);
-    return data;
+    return output;
 }
 
 function LOOK(data) { //
     var distance = 0;
+    var output = [10];
+
     $('div.dist_look').text(distance);
-    return data;
+    return output;
 }
 
 function CSCAN(data) { // Circular SCAN
     var distance = 0;
+    var output = [10];
+
     $('div.dist_cscan').html(distance);
-    return data;
+    return output;
 }
 
 function drawTable() {
@@ -145,42 +168,3 @@ function drawTable() {
     });
 
 }
-
-/*
-
-function drawTable() {
-    var choice = document.getElementById('form').choice.value;
-    var data = form.custom.value;
-    switch (choice) {
-    case "default1":
-        data = "1,10,44,2,12,3,13,20";
-        break;
-    case "default2":
-        data = "2,5,13,29,7,1,18,40,49,4";
-        break;
-    case "default3":
-        data = "45,6,16,9,33,28,11,37,49,25";
-        break;
-    }
-
-    var finalData = data.split(",");
-
-    var e = document.getElementById('method');
-    var method = e.options[e.selectedIndex].value;
-    switch(method) {
-    case "CSCAN":
-        var graphData = CSCAN(finalData);
-        break;
-    case "SSTF":
-        var graphData = SSTF(finalData);
-        break;
-    case "LOOK":
-        var graphData = LOOK(finalData);
-        break;
-    default:
-        var graphData = NOOP(finalData);
-    }
-
-    document.getElementById('table').innerHTML = '';
-}
-*/
