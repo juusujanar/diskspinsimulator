@@ -23,17 +23,9 @@ function NOOP(data) { // aka First Come First Serve
     var output = [10];
     var currentPos = 10;
 
-    $.each(data, function(index, value) {
-        var target = parseInt(value, 10);
-
+    $.each(data, function(index, target) {
         output.push(target);
-
-        if (currentPos > target) {
-            distance += currentPos-target;
-        }
-        else if (currentPos < target) {
-            distance += target-currentPos;
-        }
+        distance += Math.abs(currentPos-target);
         currentPos = target;
     });
 
@@ -44,6 +36,17 @@ function NOOP(data) { // aka First Come First Serve
 function SSTF(data) { // Shortest Seek Time First
     var distance = 0;
     var output = [10];
+    var currentPos = 10;
+
+    while (data.length > 0) {
+        var closest = data.reduce(function (prev, curr) {
+            return (Math.abs(curr - currentPos) < Math.abs(prev - currentPos) ? curr : prev);
+        });
+        var data = data.filter(function(e) { return e !== closest });
+        output.push(closest);
+        distance += Math.abs(currentPos-closest);
+        var currentPos = closest;
+    }
 
     $('div.dist_sstf').text(distance);
     return output;
@@ -52,6 +55,7 @@ function SSTF(data) { // Shortest Seek Time First
 function LOOK(data) { //
     var distance = 0;
     var output = [10];
+    var currentPos = 10;
 
     $('div.dist_look').text(distance);
     return output;
@@ -60,6 +64,7 @@ function LOOK(data) { //
 function CSCAN(data) { // Circular SCAN
     var distance = 0;
     var output = [10];
+    var currentPos = 10;
 
     $('div.dist_cscan').html(distance);
     return output;
@@ -95,7 +100,9 @@ function drawTable() {
         var data = $('#custom').val();
     }
 
-    var finalData   = data.split(',');
+    var finalData = data.split(',').map(function (x) {
+        return parseInt(x, 10);
+    });
     var xData       = categories.slice(0, finalData.length+1);
     var dataNOOP    = NOOP(finalData);
     var dataSSTF    = SSTF(finalData);
