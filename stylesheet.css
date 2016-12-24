@@ -1,0 +1,28 @@
+body {
+    font-family: 'Roboto', sans-serif;
+}
+h2 {
+    font-family: 'Open Sans', sans-serif;
+}
+p {
+    line-height: 90%;
+    margin: 10px 10px 10px 10px;
+}
+form {
+    line-height: 125%;
+    margin-left: 7px;
+}
+#wait {
+    line-height: 90%;
+    margin-top: 10px;
+}
+#button {
+    margin-top: 10px;
+    margin-left: 7px;
+}
+address {
+    font-size: 12px;
+}
+#timeline {
+    margin-left: 10px;
+}
