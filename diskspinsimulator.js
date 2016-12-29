@@ -22,6 +22,22 @@ $( document ).ready(function() {
     drawTable();
 });
 
+function largerNumbers(value) {
+    return function(element, index, array) {
+        return (element >= value);
+    };
+}
+
+function smallerNumbers(value) {
+    return function(element, index, array) {
+        return (element < value);
+    };
+}
+
+function sortNumbers(a,b) {
+    return a - b;
+}
+
 function NOOP(data) { // aka First Come First Serve
     var distance = 0;
     var output = [10];
@@ -67,8 +83,28 @@ function LOOK(data) { //
 
 function CSCAN(data) { // Circular SCAN
     var distance = 0;
-    var output = [10];
+    var output = [[10],-1];
     var currentPos = 10;
+
+    var smaller = data.filter(smallerNumbers(10)).sort(sortNumbers);
+    var larger  = data.filter(largerNumbers(10)).sort(sortNumbers);
+
+    $.each(larger, function(index, target) {
+        output[0].push(target);
+        distance += Math.abs(currentPos-target);
+        currentPos = target;
+    });
+    // {y: 50, marker: {enabled: true, lineWidth: 10}}
+    output[0].push(50,null,0);
+    output[1] = larger.length;
+    distance += 50-currentPos;
+    currentPos = 0;
+
+    $.each(smaller, function(index, target) {
+        output[0].push(target);
+        distance += Math.abs(currentPos-target);
+        currentPos = target;
+    });
 
     $('div.dist_cscan').text(distance);
     return output;
@@ -86,7 +122,8 @@ function drawTable() {
         'Step 7',
         'Step 8',
         'Step 9',
-        'Step 10'
+        'Step 10',
+        'Step 11'
     ];
 
     var choice = $('input[name=choice]:checked', '#form').val();
@@ -107,13 +144,13 @@ function drawTable() {
     var finalData = data.split(',').map(function (x) {
         return parseInt(x, 10);
     });
-    var xAxis       = categories.slice(0, finalData.length+1);
+    var xAxis       = categories.slice(0, finalData.length+2);
     var dataNOOP    = NOOP(finalData);
     var dataSSTF    = SSTF(finalData);
     var dataLOOK    = LOOK(finalData);
     var dataCSCAN   = CSCAN(finalData);
 
-    $('#container').empty();
+    //$('#container').empty();
 
     $(function () {
         Highcharts.chart('container', {
@@ -142,7 +179,11 @@ function drawTable() {
                 backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
             },
             xAxis: {
-                categories: xAxis
+                categories: xAxis,
+                labels:
+                {
+                    enabled: false
+                }
             },
             yAxis: {
                 title: {
@@ -173,9 +214,18 @@ function drawTable() {
                 data: dataLOOK
             }, {
                 name: 'CSCAN',
-                data: dataCSCAN
+                data: dataCSCAN[0],
+                /*zones: [{
+                    value: dataCSCAN[1],
+                    dashStyle: 'solid'
+                },{
+                    value: dataCSCAN[1]+1,
+                    dashStyle: 'dot'
+                },{
+                    value: dataCSCAN[1]+2,
+                    dashStyle: 'solid'
+                }]*/
             }]
         });
     });
-
 }
