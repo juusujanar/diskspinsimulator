@@ -46,10 +46,10 @@ function SSTF(data) { // Shortest Seek Time First
         var closest = data.reduce(function (prev, curr) {
             return (Math.abs(curr - currentPos) < Math.abs(prev - currentPos) ? curr : prev);
         });
-        var data = data.filter(function(e) { return e !== closest });
+        data = data.filter(function(e) { return e !== closest; });
         output.push(closest);
         distance += Math.abs(currentPos-closest);
-        var currentPos = closest;
+        currentPos = closest;
     }
 
     $('div.dist_sstf').text(distance);
@@ -87,7 +87,7 @@ function drawTable() {
         'Step 8',
         'Step 9',
         'Step 10'
-    ]
+    ];
 
     var choice = $('input[name=choice]:checked', '#form').val();
     switch (choice) {
@@ -159,7 +159,7 @@ function drawTable() {
             },
             plotOptions: {
                 area: {
-                    fillOpacity: 0.5
+                    fillOpacity: 0.0
                 }
             },
             series: [{
