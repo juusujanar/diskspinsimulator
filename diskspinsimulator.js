@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 $( document ).ready(function() {
-    drawTable();
+    drawGraph();
 });
 
 function largerNumbers(value) {
@@ -102,24 +102,36 @@ function LOOK(data) { //
 
 function CSCAN(data) { // Circular SCAN
     var distance = 0;
-    var output = [10];
+    var output = [[10],0,0,0];
     var currentPos = 10;
 
     var smaller = data.filter(smallerNumbers(10)).sort(sortNumbersAsc);
     var larger  = data.filter(largerNumbers(10)).sort(sortNumbersAsc);
 
     for (var i = 0, len1 = larger.length; i < len1; i++) {
-        output.push(larger[i]);
+        output[0].push(larger[i]);
         distance += Math.abs(currentPos-larger[i]);
         currentPos = larger[i];
     }
 
-    output.push({x: len1+1, y: 49}, {x: len1+1, y: 0});
-    distance += 50-currentPos;
+    if(currentPos === 49) {
+        output[0].push({x: len1, y: 0});
+        output[1] = len1-0.05;
+        output[2] = len1+0.05;
+        output[3] = len1+0.08;
+    } else {
+        output[0].push({x: len1+1, y: 49});
+        output[0].push({x: len1+1, y: 0});
+        output[1] = len1+0.95;
+        output[2] = len1+1.03;
+        output[3] = len1+1.05;
+        distance += 49-currentPos;
+    }
+    distance += 49;
     currentPos = 0;
 
     for (var a = 0, len2 = smaller.length; a < len2; a++) {
-        output.push({x: len1+2+a, y: smaller[a]});
+        output[0].push({x: len1+2+a, y: smaller[a]});
         distance += Math.abs(currentPos-smaller[a]);
         currentPos = smaller[a];
     }
@@ -128,24 +140,29 @@ function CSCAN(data) { // Circular SCAN
     return output;
 }
 
-function drawTable() {
+function collectData() {
     var choice = $('input[name=choice]:checked', '#form').val();
 
     var cases = {
-        default1: function() { return '1,10,44,2,12,3,13,20'; },
-        default2: function() { return '2,5,13,29,7,1,18,40,49,4'; },
-        default3: function() { return '45,6,16,9,33,28,11,37,49,25'; },
+        example1: function() { return '1,10,44,2,12,3,13,20'; },
+        example2: function() { return '2,5,13,29,7,1,18,40,49,4'; },
+        example3: function() { return '45,6,16,9,33,28,11,37,49,25'; },
         _default: function() { return $('#custom').val(); }
     };
     var data = cases[choice] ? cases[choice]() : cases._default();
+    var finalData = data.split(',').map(function (x) { return parseInt(x, 10); });
 
-    var finalData = data.split(',').map(function (x) {
-        return parseInt(x, 10);
-    });
-    var dataNOOP    = NOOP(finalData);
-    var dataSSTF    = SSTF(finalData);
-    var dataLOOK    = LOOK(finalData);
-    var dataCSCAN   = CSCAN(finalData);
+    var processed = {
+        NOOP:   NOOP(finalData),
+        SSTF:   SSTF(finalData),
+        LOOK:   LOOK(finalData),
+        CSCAN:  CSCAN(finalData)
+    };
+    return processed;
+}
+
+function drawGraph() {
+    var graphData = collectData();
 
     $(function () {
         Highcharts.chart('container', {
@@ -181,7 +198,7 @@ function drawTable() {
                 floating: true,
                 draggable: true,
                 borderWidth: 1,
-                backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
+                backgroundColor: '#FFFFFF'
             },
             xAxis: {
                 labels: {
@@ -209,16 +226,26 @@ function drawTable() {
             },
             series: [{
                 name: 'NOOP/FCFS',
-                data: dataNOOP
+                data: graphData.NOOP
             }, {
                 name: 'SSTF',
-                data: dataSSTF
+                data: graphData.SSTF
             }, {
                 name: 'LOOK',
-                data: dataLOOK
+                data: graphData.LOOK
             }, {
                 name: 'CSCAN',
-                data: dataCSCAN
+                data: graphData.CSCAN[0],
+                symbol: 'circle',
+                zoneAxis: 'x',
+                zones: [{
+                    value: graphData.CSCAN[1] }, {
+                    dashStyle: 'dot' }, {
+                    value: graphData.CSCAN[2] }, {
+                    dashStyle: 'solid' }, {
+                    value: graphData.CSCAN[3] }, {
+                    dashStyle: 'dot'
+                }]
             }]
         });
     });
