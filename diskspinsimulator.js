@@ -1,7 +1,7 @@
 /*
 
 Disk spin planner simulator
-Copyright (C) 2016  Janar Juusu
+Copyright (C) 2017  Janar Juusu
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -34,8 +34,12 @@ function smallerNumbers(value) {
     };
 }
 
-function sortNumbers(a,b) {
+function sortNumbersAsc(a,b) {
     return a - b;
+}
+
+function sortNumbersDesc(a,b) {
+    return b-a;
 }
 
 function NOOP(data) { // aka First Come First Serve
@@ -43,11 +47,11 @@ function NOOP(data) { // aka First Come First Serve
     var output = [10];
     var currentPos = 10;
 
-    $.each(data, function(index, target) {
-        output.push(target);
-        distance += Math.abs(currentPos-target);
-        currentPos = target;
-    });
+    for (var i = 0, len = data.length; i < len; i++) {
+        output.push(data[i]);
+        distance += Math.abs(currentPos-data[i]);
+        currentPos = data[i];
+    }
 
     $('div.dist_noop').text(distance);
     return output;
@@ -77,6 +81,21 @@ function LOOK(data) { //
     var output = [10];
     var currentPos = 10;
 
+    var smaller = data.filter(smallerNumbers(10)).sort(sortNumbersDesc);
+    var larger  = data.filter(largerNumbers(10)).sort(sortNumbersAsc);
+
+    for (var i = 0, len1 = larger.length; i < len1; i++) {
+        output.push(larger[i]);
+        distance += Math.abs(currentPos-larger[i]);
+        currentPos = larger[i];
+    }
+
+    for (var a = 0, len2 = smaller.length; a < len2; a++) {
+        output.push(smaller[a]);
+        distance += Math.abs(currentPos-smaller[a]);
+        currentPos = smaller[a];
+    }
+
     $('div.dist_look').text(distance);
     return output;
 }
@@ -86,24 +105,24 @@ function CSCAN(data) { // Circular SCAN
     var output = [10];
     var currentPos = 10;
 
-    var smaller = data.filter(smallerNumbers(10)).sort(sortNumbers);
-    var larger  = data.filter(largerNumbers(10)).sort(sortNumbers);
+    var smaller = data.filter(smallerNumbers(10)).sort(sortNumbersAsc);
+    var larger  = data.filter(largerNumbers(10)).sort(sortNumbersAsc);
 
-    $.each(larger, function(index, target) {
-        output.push(target);
-        distance += Math.abs(currentPos-target);
-        currentPos = target;
-    });
+    for (var i = 0, len1 = larger.length; i < len1; i++) {
+        output.push(larger[i]);
+        distance += Math.abs(currentPos-larger[i]);
+        currentPos = larger[i];
+    }
 
-    output.push(50,null,0);
+    output.push({x: len1+1, y: 49}, {x: len1+1, y: 0});
     distance += 50-currentPos;
     currentPos = 0;
 
-    $.each(smaller, function(index, target) {
-        output.push(target);
-        distance += Math.abs(currentPos-target);
-        currentPos = target;
-    });
+    for (var a = 0, len2 = smaller.length; a < len2; a++) {
+        output.push({x: len1+2+a, y: smaller[a]});
+        distance += Math.abs(currentPos-smaller[a]);
+        currentPos = smaller[a];
+    }
 
     $('div.dist_cscan').text(distance);
     return output;
@@ -111,19 +130,14 @@ function CSCAN(data) { // Circular SCAN
 
 function drawTable() {
     var choice = $('input[name=choice]:checked', '#form').val();
-    switch (choice) {
-    case 'default1':
-        var data = '1,10,44,2,12,3,13,20';
-        break;
-    case 'default2':
-        var data = '2,5,13,29,7,1,18,40,49,4';
-        break;
-    case 'default3':
-        var data = '45,6,16,9,33,28,11,37,49,25';
-        break;
-    default:
-        var data = $('#custom').val();
-    }
+
+    var cases = {
+        default1: function() { return '1,10,44,2,12,3,13,20'; },
+        default2: function() { return '2,5,13,29,7,1,18,40,49,4'; },
+        default3: function() { return '45,6,16,9,33,28,11,37,49,25'; },
+        _default: function() { return $('#custom').val(); }
+    };
+    var data = cases[choice] ? cases[choice]() : cases._default();
 
     var finalData = data.split(',').map(function (x) {
         return parseInt(x, 10);
@@ -149,21 +163,31 @@ function drawTable() {
                     bottom: '10px'
                 }
             },
+            tooltip: {
+                formatter: function() {
+                    return '<b>'+ this.series.name +'</b><br/>Step '+
+                        this.x +': Sector '+ this.y;
+                }
+            },
             legend: {
                 layout: 'vertical',
                 align: 'right',
                 verticalAlign: 'top',
                 x: -150,
                 y: 100,
+                title: {
+                    text: 'Legend'
+                },
                 floating: true,
+                draggable: true,
                 borderWidth: 1,
                 backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
             },
             xAxis: {
-                labels:
-                {
-                    enabled: false
-                }
+                labels: {
+                    enabled: true
+                },
+                tickInterval: 1
             },
             yAxis: {
                 title: {
@@ -175,7 +199,7 @@ function drawTable() {
                     }
                 },
                 min: 0,
-                max: 50,
+                max: 49,
                 tickInterval: 1
             },
             plotOptions: {
@@ -194,7 +218,7 @@ function drawTable() {
                 data: dataLOOK
             }, {
                 name: 'CSCAN',
-                data: dataCSCAN,
+                data: dataCSCAN
             }]
         });
     });

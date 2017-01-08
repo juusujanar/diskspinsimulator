@@ -6,7 +6,7 @@ This was created for a school project and is made using HTML, JavaScript and a l
 
 This is available in English and Estonian.
 
-<!-- (You can see this live [here.](https://juusujanar.eu/filesystem)) -->
+<!-- (You can see this live [here.](https://juusujanar.eu/diskspinsimulator)) -->
 
 ## Installation
 
